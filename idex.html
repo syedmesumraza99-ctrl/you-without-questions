@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>You, Without Questions</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont;
+    background: #0f0f0f;
+    color: #eaeaea;
+    line-height: 1.6;
+  }
+
+  section {
+    min-height: 100vh;
+    padding: 80px 15%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  h1, h2 {
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+
+  p {
+    max-width: 600px;
+    opacity: 0.85;
+  }
+
+  .box {
+    margin-top: 40px;
+    padding: 40px;
+    border: 1px solid #333;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .box:hover {
+    background: #1a1a1a;
+  }
+
+  .reveal {
+    display: none;
+    text-align: center;
+  }
+
+  .result {
+    font-size: 1.8rem;
+    margin-top: 20px;
+  }
+
+  .note {
+    font-size: 0.85rem;
+    opacity: 0.5;
+    margin-top: 40px;
+  }
+
+  button {
+    margin-top: 40px;
+    padding: 12px 28px;
+    font-size: 16px;
+    background: #fff;
+    color: #000;
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<section>
+  <h1>Just explore.</h1>
+  <p>
+    There are no questions.  
+    No instructions.  
+    No forms.
+  </p>
+
+  <div class="box">Pause here if you want.</div>
+  <div class="box">Or continue scrolling.</div>
+</section>
+
+<section>
+  <h2>Notice what you do.</h2>
+  <p>
+    Some people rush.  
+    Some hesitate.  
+    Some explore everything.
+  </p>
+
+  <div class="box">This reacts only if you interact.</div>
+</section>
+
+<section>
+  <h2>Almost there.</h2>
+  <p>
+    You didn’t tell us anything.
+  </p>
+
+  <button onclick="reveal()">Reveal</button>
+</section>
+
+<section class="reveal" id="revealSection">
+  <h2>Based on how you behaved:</h2>
+  <div class="result" id="resultText"></div>
+
+  <div class="note">
+    This is a behavioral reflection — not a psychological diagnosis.
+  </div>
+</section>
+
+<script>
+  // --- Tracking ---
+  let clicks = 0;
+  let mouseMoves = 0;
+  let hesitations = [];
+  let startTime = Date.now();
+  let hoverStart = null;
+
+  document.querySelectorAll(".box").forEach(box => {
+    box.addEventListener("mouseenter", () => {
+      hoverStart = Date.now();
+    });
+
+    box.addEventListener("click", () => {
+      clicks++;
+      if (hoverStart) {
+        hesitations.push(Date.now() - hoverStart);
+        hoverStart = null;
+      }
+    });
+  });
+
+  window.addEventListener("mousemove", () => {
+    mouseMoves++;
+  });
+
+  // --- Analysis ---
+  function reveal() {
+    const timeSpent = (Date.now() - startTime) / 1000;
+    const avgHesitation =
+      hesitations.length
+        ? hesitations.reduce((a, b) => a + b) / hesitations.length
+        : 0;
+
+    let traits = {
+      explorer: 0,
+      observer: 0,
+      decisive: 0,
+      curious: 0
+    };
+
+    if (mouseMoves > 400) traits.explorer += 2;
+    if (clicks > 3) traits.curious += 2;
+    if (timeSpent > 90 && clicks < 3) traits.observer += 2;
+    if (avgHesitation < 300) traits.decisive += 2;
+
+    const dominant = Object.entries(traits)
+      .sort((a, b) => b[1] - a[1])[0][0];
+
+    const messages = {
+      explorer: "You explore before committing. Curiosity guides your decisions.",
+      observer: "You prefer understanding before acting. You don’t rush.",
+      decisive: "You trust instinct and move quickly once something feels right.",
+      curious: "You engage with what catches your attention and follow interest."
+    };
+
+    document.getElementById("resultText").innerText = messages[dominant];
+    document.getElementById("revealSection").style.display = "flex";
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  }
+</script>
+
+</body>
+</html>
